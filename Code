@@ -1,0 +1,348 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <windows.h>
+#include <ctype.h>
+#include "Fonctions.h"
+
+
+/**-----Variables Globales -----*/
+Automate A ;
+
+void creerAutomate()
+{
+//int *nbAlphabet , int *nbEtat , int *nbIntruction ;
+    char a  ;
+    int i , j ;
+
+/**------------------------------"Les Alphabets"----------------------------------------**/
+    printf("Entrez le nombre d'alphabet : ") ;
+    scanf("%d" , &A.nbrAlphabet) ;
+    printf(" Veuillez saisir les %d alphabets de votre automate (1 seul caractere à la fois )  : \n " ,A.nbrAlphabet) ;
+    //A.ensAlphabet[0] = '&' ;
+    for (i=0 ; i<A.nbrAlphabet ; i++)
+    {
+Alphabet:
+        printf(" Alphabet %d : \n" , i+1 ) ;
+        scanf("%s" , &a) ;
+       // scanf("%c" , &a) ;
+        for (j=0 ; j< A.nbrAlphabet; j++)
+        {
+            if (a == A.ensAlphabet[j])
+            {
+                printf("Alphabet existe déjà \n") ;
+                goto Alphabet ;
+            }
+        }
+        A.ensAlphabet[i] = a ;
+    }
+    A.ensAlphabet[A.nbrAlphabet] = '&' ;
+/**------------------------------"Les Etats"----------------------------------------**/
+//    int  Fin ;
+    printf("entrez le nombre d'état \n ") ;
+EtatZero:
+    scanf("%d" , &A.nbrEtat) ;
+    if ( A.nbrEtat == 0)
+    {
+        printf("Il faut entrer un nombre n'égale pas à zéro \n") ;
+        goto EtatZero ;
+    }
+    for (i=0 ; i<A.nbrEtat ; i++)
+    {
+        printf(" L'état : S%d \n" , i) ;
+       /* printf("S'il est un état initial mettez '1' sinon un '0' \n") ;
+        scanf("%d" , &In) ;
+        if (In == 1)
+        {
+            (*A).nbrEtatsInitiaux++ ;
+        }*/
+        A.ensEtat[i].nbrEtat = i ;
+        //(*A).ensEtat[i].Init = In ;
+        printf("S'il est un état final mettez '1' sinon un '0' \n") ;
+        scanf("%d" , &A.ensEtat[i].fin) ;
+        if (A.ensEtat[i].fin == 1)
+        {
+            A.nbrEtatsFinaux++ ;
+        }
+        //A.ensEtat[i].fin = Fin ;
+    }
+    /**int cpt = 0 ;
+    for(cpt = 0 ; cpt<A.nbrAlphabet+1 ; cpt++ )
+    {
+        printf("Les alphabets sont %c \n " , A.ensAlphabet[cpt]) ;
+    }**/
+/**------------------------------"Les Instructions"----------------------------------------**/
+//int nbInstruct ;
+int numEtat ;
+int existe=0 ;
+printf("Entrez le nombre d'instructions \n") ;
+scanf("%d" , &A.nbrInstructions) ;
+for (i = 0 ; i<A.nbrInstructions ; i++)
+{
+    /** Si **/
+Etats:
+    printf("Entrez l'état de départ \n  Si=S") ;
+    scanf("%d" , &numEtat) ;
+    for (j = 0 ; j<A.nbrEtat ; j++)
+    {
+        if (A.ensEtat[j].nbrEtat==numEtat)
+        {
+          existe=1 ;
+        }
+    }
+    if (existe == 0)
+    {
+        printf("Etat innexistant \n") ;
+        goto Etats ;
+    }
+    else
+    {
+        A.ensInstructions[i].Si.nbrEtat = numEtat ;
+        A.ensInstructions[i].Si.fin = A.ensEtat[j].fin ;
+    }
+    /** Xi **/
+    char s[10] ;
+    //char *s = NULL;
+    int c  ;
+    int trouv = 0 ;
+Mot:
+    // Vérifier si les alphabets du mot existent dans l'ensemble d'alphabet
+    j=0 ;
+    c=0 ;
+    existe = 1 ;
+    printf("Entrez le mot Xi=") ;
+    scanf("%s" , s) ;
+    while ((j < strlen(s)) && (existe == 1))
+    //for(j=0 ; j<strlen(s) ; j++)
+    {
+        trouv = 0 ;
+        while((c < A.nbrAlphabet+1) && (trouv == 0 ))
+        //for(c=0 ; c<A.nbrAlphabet ; c++)
+        {
+            if (s[j] == A.ensAlphabet[c])
+            {
+                //j++ ;
+                existe = 1 ;
+                trouv = 1 ;
+                j++ ;
+                c=0 ;
+            }
+            else
+            {
+                existe = 0 ;
+                c++ ;
+            }
+            if ((j == strlen(s)-1) && (trouv == 1))
+            {
+                existe = 1 ;
+            }
+        }
+        //j++ ;
+    }
+    if (existe == 0 )
+    {
+        printf("Ce mot contient des alphabets qui n'existent pas \n ") ;
+        goto Mot ;
+    }
+    else
+    {
+        int cp ;
+        for(cp = 0 ; cp < strlen(s) ; cp++)
+        {
+            A.ensInstructions[i].Xi[cp] = s[cp] ;
+        }
+    }
+    /** Sj **/
+    EtatsJ:
+    printf("Entrez l'état d'arrivée  \n  Sj=S") ;
+    scanf("%d" , &numEtat) ;
+    for (j = 0 ; j<A.nbrEtat ; j++)
+    {
+        if (A.ensEtat[j].nbrEtat==numEtat)
+        {
+          existe=1 ;
+        }
+    }
+    if (existe == 0)
+    {
+        printf("Etat innexistant \n") ;
+        goto EtatsJ ;
+    }
+    else
+    {
+        A.ensInstructions[i].Sj.nbrEtat = numEtat ;
+        A.ensInstructions[i].Sj.fin = A.ensEtat[j].fin ;
+    }
+
+}
+for (i=0 ; i<A.nbrInstructions ; i++ )
+{
+    printf(" < S%d  ,  %s  , S%d >  \n" , A.ensInstructions[i].Si.nbrEtat , A.ensInstructions[i].Xi , A.ensInstructions[i].Sj.nbrEtat) ;
+}
+
+}
+
+void eliminerEpsilon()
+{
+    int i=0 ;
+    int j = 0  ;
+    //for (i = 0 ; i < A.nbrInstructions ; i++)
+EtatSuiv:
+    //printf("Démarage d'élimination d'epsilon \n") ;
+    while (i < A.nbrInstructions)
+    {
+        //printf("Dans la prmière boucle de TQ \n ") ;
+        if(A.ensInstructions[i].Xi[0] == '&')
+        {
+            //j = 0 ;
+            while (j < A.nbrInstructions )
+            {
+                //printf("La deuxième boucle de TQ \n ") ;
+                if (A.ensInstructions[j].Si.nbrEtat == A.ensInstructions[i].Sj.nbrEtat)
+                {
+                    if (A.ensInstructions[j].Xi[0] == '&')
+                    {
+                        i = j ;
+                        goto EtatSuiv ;
+                    }
+                }
+                j++ ;
+            }
+            int y = 0 ;
+          for(y=0 ; y<A.nbrInstructions ; y++)
+          //while((j-1) < A.nbrInstructions)
+          {
+              //printf("La boucle de pour \n ") ;
+              if (A.ensInstructions[y].Si.nbrEtat == A.ensInstructions[i].Sj.nbrEtat)
+              {
+                 // printf("Elimination d'epsilon \n  ") ;
+
+                  A.ensInstructions[A.nbrInstructions+1].Si.nbrEtat = A.ensInstructions[i].Si.nbrEtat ;
+                  A.ensInstructions[A.nbrInstructions+1].Sj.nbrEtat = A.ensInstructions[y].Sj.nbrEtat ;
+                  int cpt = 0 ;
+                  for(cpt = 0 ; cpt < strlen(A.ensInstructions[y].Xi) ; cpt++ )
+                  {
+                     A.ensInstructions[A.nbrInstructions].Xi[cpt] = A.ensInstructions[y].Xi[cpt] ;
+                  }
+
+                  if(A.ensInstructions[i].Sj.fin == 1)
+                  {
+                      A.ensInstructions[i].Si.fin = 1 ;
+                  }
+                  A.nbrInstructions ++ ;
+
+              }
+
+          }
+          i = -1 ;
+        }
+        i++ ;
+    }
+   // printf("FINNNNN !! \n") ;
+}
+
+int main()
+{
+    creerAutomate(); ///Creer l'automate
+
+    PartiGeneralise(A) ;
+
+    printf("Le nombre d'instructions %d : \n" , A.nbrInstructions) ;
+    //eliminerEpsilon() ;
+    int i ;
+    for(i = 0 ; i < A.nbrInstructions ; i++)
+    {
+         printf(" < S%d  ,  %s  , S%d >  \n" , A.ensInstructions[i].Si.nbrEtat , A.ensInstructions[i].Xi , A.ensInstructions[i].Sj.nbrEtat) ;
+    }
+    /*//afficher instructions
+    int i;
+    printf("l'ensemble II est constitue de \n :");
+    for(i=0;i<automate.nbInst;i++)
+    {
+        printf(" \t\t\t inst i: %d {S%d,%c,S%d} \n ",i, automate.inst[i].etatI,automate.inst[i].alphabet,automate.inst[i].etatJ);
+
+    }*/
+    printf("Le nombre d'alphabets est %d : \n" , A.nbrAlphabet) ;
+    printf("Le nombre d'instructions %d : \n" , A.nbrInstructions) ;
+    printf("Le nombre d'état %d : \n" , A.nbrEtat ) ;
+    return 0;
+}
+
+
+void PartiGeneralise ()
+{
+    int i= 0;
+    int j=0 ;
+    int l =0 ;
+    int m=0 ;
+    char mot[10];
+    int p= A.nbrInstructions ;
+    printf("p %d \n", p) ;
+    printf("merde0\n") ;
+    while (i<p) /// tant qu'on a des instructions
+    {
+        //Instruction inst = A.ensInstructions[i];
+        printf("merde1\n") ;
+        printf("%d", strlen(A.ensInstructions[i].Xi)) ;
+        l = strlen(A.ensInstructions[i].Xi) ;
+        if ( (strlen(A.ensInstructions[i].Xi))> 1 )
+        {
+            int k= 0 ;
+            for (m=0 ; m<10; m++) mot[m] = A.ensInstructions[i].Xi[m] ;
+            Etat fin ;
+            Etat suiv ;
+            printf("merde2\n") ;
+            for (j=0 ; j<l ; j++)
+            {
+                if (k==0) ///la case meme dans le tableau inst à modifier
+                { ///je n'incremente pas le nbr d'instruction
+                    fin = A.ensInstructions[i].Sj ; ///sauvegarde du dernier état de l'instruction
+
+                    A.ensInstructions[i].Sj.nbrEtat = A.nbrEtat ;
+                    A.ensInstructions[i].Sj.fin = 0 ;
+
+                    //A.ensInstructions[i] = inst ;
+
+                    suiv = A.ensInstructions[i].Sj ; ///sauvegarde du suivant
+                    A.ensInstructions[i].Xi[0]= mot[0] ;
+                    for (m=1 ; m<10 ; m++) A.ensInstructions[i].Xi[m] = '\0' ;
+                    //for (l=1 ;l<10 ;l++) inst.Xi[l]= -1 ;
+                    A.nbrEtat++ ;
+                }
+                else ///au milieu de l'automate, donc à la fin du tableau inst
+                {
+                    if (j!=l-1)
+                    {printf("merde3\n") ;
+                    k= A.nbrEtat ;
+                    A.ensInstructions[A.nbrInstructions].Si = suiv ;
+
+                    A.ensInstructions[A.nbrInstructions].Sj.nbrEtat = k ;
+                    A.ensInstructions[A.nbrInstructions].Sj.fin = 0 ;
+                    A.ensInstructions[A.nbrInstructions].Xi[0] = mot[j] ;
+                    for (m=1 ; m<10 ; m++) A.ensInstructions[i].Xi[m] = '\0' ;
+                    //for (l=1 ;l<10 ;l++) inst.Xi[l]= -1 ;
+
+                    suiv = A.ensInstructions[A.nbrInstructions].Sj ;
+
+                    A.nbrEtat++ ;
+                    A.nbrInstructions ++ ;
+                    }
+                }
+                if (j==l-1) ///pour la derniere inst
+                {
+                    printf("merde4") ;
+                    A.ensInstructions[A.nbrInstructions].Si = suiv ;
+                    A.ensInstructions[A.nbrInstructions].Sj = fin ;
+                    A.ensInstructions[A.nbrInstructions].Xi[0] = mot[j] ;
+                    for (m=1 ; m<10 ; m++) A.ensInstructions[i].Xi[m] = '\0' ;
+                    //for (l=1 ;l<10 ;l++) inst.Xi[l]= -1 ;
+
+                    A.nbrInstructions ++ ;
+                }
+                k= A.nbrEtat ;
+            }
+            }
+            i++ ;
+        }
+
+    }
